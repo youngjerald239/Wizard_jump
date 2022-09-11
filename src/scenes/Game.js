@@ -4,6 +4,9 @@ export default class Game extends Phaser.Scene{
     /** @type {Phaser.Physics.Arcade.Sprite} */
     player
 
+    /** @type {Phaser.Physics.Arcade.StaticGroup} */
+    platforms
+
     constructor(){
         super('game')
     }
@@ -22,6 +25,7 @@ export default class Game extends Phaser.Scene{
     create()
     {
         this.add.image(240, 320, 'background')
+        .setScrollFactor(1, 0)
 
         // add the platform image in the center
         // this.add.image(240, 320, 'platform')
@@ -29,7 +33,7 @@ export default class Game extends Phaser.Scene{
         // this.physics.add.staticImage(240, 320, 'platform')
         //     .setScale(0.5)
         //Creates multiple platforms
-        const platforms = this.physics.add.staticGroup()
+        this.platforms = this.physics.add.staticGroup()
 
         // 5 platforms from the group for loop
         for (let i = 0; i < 5; ++i){
@@ -37,7 +41,7 @@ export default class Game extends Phaser.Scene{
             const y = 150 * i
 
             /** @type {Phaser.Physics.Arcade.Sprite} */
-            const platform = platforms.create(x, y, 'platform')
+            const platform = this.platforms.create(x, y, 'platform')
             platform.scale = 0.5
 
             /** @type {Phaser.Physics.Arcade.StaticBody} */
@@ -47,7 +51,8 @@ export default class Game extends Phaser.Scene{
         // add player sprite
         this.player = this.physics.add.sprite(240, 320, 'wizkid_stand')
             .setScale(0.5)
-        this.physics.add.collider(platforms, this.player)
+        // add more platforms
+        this.physics.add.collider(this.platforms, this.player)
 
         // Collision for sprite
         this.player.body.checkCollision.up = false
@@ -68,5 +73,17 @@ export default class Game extends Phaser.Scene{
             // this makes wizkid jump straight up
             this.player.setVelocityY(-300)
         }
+
+        this.platforms.children.iterate(child => {
+            /** @type {Phaser.Physics.Arcade.Sprite} */
+            const platform = child
+            const scrollY = this.cameras.main.scrollY
+            if (platform.y >= scrollY + 700)
+            {
+                platform.y = scrollY - Phaser.Math.Between(50, 100)
+                platform.body.updateFromGameObject()
+            }
+
+        })
     }
 }
