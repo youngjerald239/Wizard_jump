@@ -1,11 +1,16 @@
 import Phaser from "../lib/phaser.js";
 
+import Star from "../game/Star.js"
+
 export default class Game extends Phaser.Scene{
     /** @type {Phaser.Physics.Arcade.Sprite} */
     player
 
     /** @type {Phaser.Physics.Arcade.StaticGroup} */
     platforms
+
+    /** @type {Phaser.Physics.Arcade.Group} */
+    stars
 
     /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
     cursors 
@@ -23,6 +28,9 @@ export default class Game extends Phaser.Scene{
 
         // load the player image
         this.load.image('wizkid_stand', 'assets/wizbizstand.png')
+
+        // load the Star collections
+        this.load.image('star', 'assets/star.png')
 
         // cursors keys for controls
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -57,8 +65,26 @@ export default class Game extends Phaser.Scene{
         // add player sprite
         this.player = this.physics.add.sprite(240, 320, 'wizkid_stand')
             .setScale(0.5)
+
+        // add star sprite group
+        this.stars = this.physics.add.group({
+            classType: Star
+        })
+        
         // add more platforms
         this.physics.add.collider(this.platforms, this.player)
+
+        // add stars to platforms
+        this.physics.add.collider(this.platforms, this.stars)
+
+        // player collision with stars
+        this.physics.add.overlap(
+            this.player,
+            this.stars,
+            this.handleCollectStar, //called on overlap
+            undefined,
+            this
+        )
 
         // Collision for sprite
         this.player.body.checkCollision.up = false
@@ -106,6 +132,8 @@ export default class Game extends Phaser.Scene{
             {
                 platform.y = scrollY - Phaser.Math.Between(50, 100)
                 platform.body.updateFromGameObject()
+
+                this.addStarAbove(platform)
             }
 
         })
@@ -129,5 +157,39 @@ export default class Game extends Phaser.Scene{
         }
         
     }
-    
+    /**
+    * @param {Phaser.GameObjects.Sprite} sprite
+    */
+    addStarAbove(sprite)
+    {
+        const y = sprite.y - sprite.displayHeight
+
+        /** @type {Phaser.Physics.Arcade.Sprite} */
+        const star = this.stars.get(sprite.x, y, 'star')
+
+        // set active and visible
+        star.setActive(true)
+        star.setVisible(true)
+
+        this.add.existing(star)
+
+        // update the physics and body size
+        star.body.setSize(star.width, star.height)
+
+        this.physics.world.enable(star)
+
+        return star 
+    }
+    /**
+     * @param {Phaser.Physics.Arcade.Sprite} player
+     * @param {Star} star
+    */
+    handleCollectStar(player, star)
+    {
+        // hide from display
+        this.stars.killAndHide(star, player)
+
+        // disable from physics world
+        this.physics.world.disableBody(star.body)
+    }
 }
