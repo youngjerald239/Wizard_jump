@@ -24,6 +24,10 @@ export default class Game extends Phaser.Scene{
     constructor(){
         super('game')
     }
+    init()
+    {
+        this.starsCollected = 0
+    }
 
     preload()
     {
@@ -149,6 +153,12 @@ export default class Game extends Phaser.Scene{
             }
 
         })
+
+        const bottomPlatform = this.findBottomMostPlatform()
+        if (this.player.y > bottomPlatform.y + 200)
+        {
+            this.scene.start('game-over')
+        }
     }
     /** 
      * * @param {Phaser.GameObjects.Sprite} sprite
@@ -210,5 +220,26 @@ export default class Game extends Phaser.Scene{
         // create new text value and set in stars:
         const value = `Stars: ${this.starsCollected }`
         this.starsCollectedText.text = value
+    }
+
+    findBottomMostPlatform()
+    {
+        const platforms = this.platforms.getChildren()
+        let bottomPlatform = platforms[0]
+
+        for (let i = 1; i < platforms.length; ++i)
+        {
+            const platform = platforms[i]
+
+            // discard any platforms that are above current
+            if (platform.y < bottomPlatform.y)
+            {
+                continue
+            }
+
+            bottomPlatform = platform 
+        }
+
+        return bottomPlatform 
     }
 }
