@@ -7,6 +7,9 @@ export default class Game extends Phaser.Scene{
     /** @type {Phaser.Physics.Arcade.StaticGroup} */
     platforms
 
+    /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
+    cursors 
+
     constructor(){
         super('game')
     }
@@ -20,6 +23,9 @@ export default class Game extends Phaser.Scene{
 
         // load the player image
         this.load.image('wizkid_stand', 'assets/wizbizstand.png')
+
+        // cursors keys for controls
+        this.cursors = this.input.keyboard.createCursorKeys()
     }
 
     create()
@@ -61,6 +67,9 @@ export default class Game extends Phaser.Scene{
 
         // Camera follows the player
         this.cameras.main.startFollow(this.player)
+
+        // set the horizontal dead zone to 1.5x game width
+        this.cameras.main.setDeadzone(this.scale.width * 1.5)
     }
 
     update()
@@ -73,6 +82,21 @@ export default class Game extends Phaser.Scene{
             // this makes wizkid jump straight up
             this.player.setVelocityY(-300)
         }
+            // movement left and right
+        if (this.cursors.left.isDown && !touchingDown)
+        {
+            this.player.setVelocityX(-200)
+        } else if (this.cursors.right.isDown && !touchingDown)
+        {
+            this.player.setVelocityX(200)
+        }
+        else 
+        {
+            //Stops movement
+            this.player.setVelocityX(0)
+        }
+
+        this.horizontalWrap(this.player)
 
         this.platforms.children.iterate(child => {
             /** @type {Phaser.Physics.Arcade.Sprite} */
@@ -86,4 +110,24 @@ export default class Game extends Phaser.Scene{
 
         })
     }
+    /** 
+     * * @param {Phaser.GameObjects.Sprite} sprite
+     * */
+    horizontalWrap(sprite)
+    {
+        const halfWidth = sprite.displayWidth * 0.5
+        const gameWidth = this.scale.width
+        if (sprite.x < -halfWidth)
+            {
+            sprite.x = gameWidth + halfWidth
+            
+        }
+         else if (sprite.x > gameWidth + halfWidth)
+        {
+            sprite.x = -halfWidth
+            
+        }
+        
+    }
+    
 }
