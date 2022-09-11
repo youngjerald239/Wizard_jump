@@ -3,6 +3,9 @@ import Phaser from "../lib/phaser.js";
 import Star from "../game/Star.js"
 
 export default class Game extends Phaser.Scene{
+
+    starsCollected = 0
+
     /** @type {Phaser.Physics.Arcade.Sprite} */
     player
 
@@ -15,13 +18,16 @@ export default class Game extends Phaser.Scene{
     /** @type {Phaser.Types.Input.Keyboard.CursorKeys} */
     cursors 
 
+    /** @type {Phaser.GameObjects.Text} */
+    starsCollectedText
+
     constructor(){
         super('game')
     }
 
     preload()
     {
-        this.load.image('background', 'assets/bg_layer1.png')
+        this.load.image('background', 'assets/bg_layer1.jpg')
 
         // load the platform image
         this.load.image('platform', 'assets/ground_grass.png')
@@ -96,6 +102,12 @@ export default class Game extends Phaser.Scene{
 
         // set the horizontal dead zone to 1.5x game width
         this.cameras.main.setDeadzone(this.scale.width * 1.5)
+
+        // shows collected stars
+        const style = { color: 'gold', fontSize: 24 }
+        this.starsCollectedText = this.add.text(240, 10, 'Stars: 0', style)
+            .setScrollFactor(0)
+            .setOrigin(0.5, 0)
     }
 
     update()
@@ -106,7 +118,7 @@ export default class Game extends Phaser.Scene{
         if (touchingDown)
         {
             // this makes wizkid jump straight up
-            this.player.setVelocityY(-300)
+            this.player.setVelocityY(-315)
         }
             // movement left and right
         if (this.cursors.left.isDown && !touchingDown)
@@ -191,5 +203,12 @@ export default class Game extends Phaser.Scene{
 
         // disable from physics world
         this.physics.world.disableBody(star.body)
+
+        // increase by 1 when star is collected
+        this.starsCollected++
+
+        // create new text value and set in stars:
+        const value = `Stars: ${this.starsCollected }`
+        this.starsCollectedText.text = value
     }
 }
