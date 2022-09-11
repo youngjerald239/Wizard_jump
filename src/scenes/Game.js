@@ -39,8 +39,14 @@ export default class Game extends Phaser.Scene{
         // load the player image
         this.load.image('wizkid_stand', 'assets/wizbizstand.png')
 
+        // player jump image
+        this.load.image('wizkid_jump', 'assets/wizbizjump.png')
+
         // load the Star collections
         this.load.image('star', 'assets/star.png')
+
+        // load audio
+        this.load.audio('jump', 'assets/sfx/phaseJump1.mp3')
 
         // cursors keys for controls
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -123,6 +129,19 @@ export default class Game extends Phaser.Scene{
         {
             // this makes wizkid jump straight up
             this.player.setVelocityY(-315)
+
+            // switch to jump texture
+            this.player.setTexture('wizkid_jump')
+
+            // play jump sound
+            this.sound.play('jump')
+        }
+
+        const vy = this.player.body.velocity.y
+        if (vy > 0 && this.player.texture.key !== 'wizkid_stand')
+        {
+            // switch back to stand texture
+            this.player.setTexture('wizkid_stand')
         }
             // movement left and right
         if (this.cursors.left.isDown && !touchingDown)
